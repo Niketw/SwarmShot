@@ -1,12 +1,11 @@
-#Code for Main player
-
 import pygame
+import math
 
 class Player:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.speed = 4  # Movement speed
+        self.speed = 2  # Movement speed
 
         # Load the sprite sheet
         self.sprite_sheet = pygame.image.load("Sprites/Sprites_Player/mega_scientist_walk.png").convert_alpha()
@@ -21,10 +20,6 @@ class Player:
     def load_frames(self):
         """Extract frames from sprite sheet for animation."""
         frames = {
-            #Explaintation: (x,y,Width,Height)
-            #Top-left of sprite-sheet is 0,0 cordinate
-            #In properties , you see mega_scientist_walk is 576*256 pixels
-            #64X64 is each grid
             "up": [self.sprite_sheet.subsurface((i * 64, 0, 64, 64)) for i in range(8)],
             "left": [self.sprite_sheet.subsurface((i * 64, 64, 64, 64)) for i in range(8)],
             "down": [self.sprite_sheet.subsurface((i * 64, 128, 64, 64)) for i in range(8)],
@@ -35,26 +30,38 @@ class Player:
     def update(self, keys):
         """Update player position and animation based on input."""
         moving = False
+        move_x, move_y = 0, 0
 
-        # Movement logic
-        #up-down 
+        # Check vertical movement (up/down)
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.y -= self.speed
+            move_y -= 1
             self.direction = "up"
             moving = True
         elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.y += self.speed
+            move_y += 1
             self.direction = "down"
             moving = True
-        #left-right
+
+        # Check horizontal movement (left/right)
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.x -= self.speed
+            move_x -= 1
             self.direction = "left"
             moving = True
         elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.x += self.speed
+            move_x += 1
             self.direction = "right"
             moving = True
+
+        # Normalize diagonal movement to ensure consistent speed
+        if move_x != 0 and move_y != 0:
+            # If moving diagonally, normalize the vector to prevent faster diagonal movement
+            length = math.sqrt(move_x ** 2 + move_y ** 2)
+            move_x /= length
+            move_y /= length
+
+        # Apply the movement
+        self.x += move_x * self.speed
+        self.y += move_y * self.speed
 
         # Update animation frame
         if moving:
